@@ -1,0 +1,17 @@
+.env
+*.env
+hugging face token.txt
+**/__pycache__/
+**/*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+checkpoints/**/*
+!checkpoints/mathglm-2b/model_config.json
+*.pt
+*.bin
+*.safetensors
+teacher_compare_run/
+.DS_Store
+Thumbs.db
