@@ -30,8 +30,15 @@ def expression_to_mathglm_input(expression: str) -> str:
 
 def read_mathglm_model_config(checkpoint_dir: Path) -> dict:
     cfg_path = checkpoint_dir / "model_config.json"
-    text = cfg_path.read_text(encoding="utf-8")
-    return json.loads(text)
+    if cfg_path.exists():
+        text = cfg_path.read_text(encoding="utf-8")
+        return json.loads(text)
+    default_path = (
+        Path(__file__).resolve().parents[2]
+        / "config"
+        / "mathglm_default.json"
+    )
+    return json.loads(default_path.read_text(encoding="utf-8"))
 
 
 class MathGLMBackend:

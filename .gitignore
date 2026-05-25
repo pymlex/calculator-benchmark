@@ -7,7 +7,9 @@ hugging face token.txt
 .mypy_cache/
 .ruff_cache/
 .ipynb_checkpoints/
-checkpoints/**/*
+checkpoints/
+!checkpoints/mathglm-2b/
+checkpoints/mathglm-2b/*
 !checkpoints/mathglm-2b/model_config.json
 *.pt
 *.bin
