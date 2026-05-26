@@ -1,4 +1,4 @@
-# calculator-benchmark
+# Calculator benchmark
 
 Evaluation pipeline for the [pymlex/calculator](https://huggingface.co/datasets/pymlex/calculator) arithmetic benchmark. Inference code and Colab workflow live in this repository. Per-model CSV files, metrics, and plots are stored under `results/`. The dataset card on Hugging Face is published from the same outputs via `scripts/sync_publish_hf.py`.
 
