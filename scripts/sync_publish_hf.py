@@ -1,14 +1,13 @@
 from __future__ import annotations
 
+import _bootstrap  # noqa: F401
+
 import argparse
 import subprocess
 from pathlib import Path
 
-import sys
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
 from scripts.fetch_baseline_csv import fetch_qwen_baselines
+from scripts.push_hf_dataset import main as push_hf_main
 
 
 def git_pull(repo_root: Path) -> None:
@@ -40,16 +39,16 @@ def main():
     run_dir = args.repo_root / "results" / "run"
     fetch_qwen_baselines(run_dir)
 
-    subprocess.run(
-        [
-            sys.executable,
-            str(args.repo_root / "scripts" / "push_hf_dataset.py"),
-            "--run-dir",
-            str(run_dir),
-        ],
-        cwd=args.repo_root,
-        check=True,
-    )
+    import sys
+
+    argv = sys.argv
+    sys.argv = [
+        "push_hf_dataset.py",
+        "--run-dir",
+        str(run_dir),
+    ]
+    push_hf_main()
+    sys.argv = argv
 
 
 if __name__ == "__main__":
