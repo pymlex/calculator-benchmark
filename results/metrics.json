@@ -1,0 +1,19 @@
+{
+  "summary": [
+    {
+      "model_id": "nvidia/AceReason-Nemotron-1.1-7B",
+      "overall_acc": 0.9556666666666667,
+      "weighted_score": 0.9128467741935482
+    },
+    {
+      "model_id": "Qwen/Qwen2.5-Math-7B-Instruct",
+      "overall_acc": 0.8036666666666666,
+      "weighted_score": 0.6510443548387096
+    },
+    {
+      "model_id": "Qwen/Qwen2.5-Math-1.5B-Instruct",
+      "overall_acc": 0.7583333333333333,
+      "weighted_score": 0.5710524193548387
+    }
+  ]
+}

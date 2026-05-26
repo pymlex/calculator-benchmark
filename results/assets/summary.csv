@@ -1,0 +1,4 @@
+model_id,overall_acc,weighted_score
+nvidia/AceReason-Nemotron-1.1-7B,0.9556666666666667,0.9128467741935482
+Qwen/Qwen2.5-Math-7B-Instruct,0.8036666666666666,0.6510443548387096
+Qwen/Qwen2.5-Math-1.5B-Instruct,0.7583333333333333,0.5710524193548387
