@@ -1,6 +1,36 @@
 # calculator-benchmark
 
-Evaluation pipeline for the [pymlex/calculator](https://huggingface.co/datasets/pymlex/calculator) arithmetic benchmark. Inference code and Colab workflow live in this repository. Aggregated CSV files, metrics, and the dataset card on Hugging Face are published from run outputs.
+Evaluation pipeline for the [pymlex/calculator](https://huggingface.co/datasets/pymlex/calculator) arithmetic benchmark. Inference code and Colab workflow live in this repository. Per-model CSV files, metrics, and plots are stored under `results/`. The dataset card on Hugging Face is published from the same outputs via `scripts/sync_publish_hf.py`.
+
+## Benchmark results
+
+Dataset: [pymlex/calculator](https://huggingface.co/datasets/pymlex/calculator) test split, 3000 examples.
+
+Models evaluated so far: `Qwen2.5-Math-1.5B`, `Qwen2.5-Math-7B`, `AceReason-Nemotron-1.1-7B`. `MathGLM-2B` is supported by the runner and will appear in the table after a successful Colab run.
+
+Weighted score with step weights $s^2$, $s \in \{1,\ldots,15\}$:
+
+$$
+\text{weighted\_score} = \frac{\sum_{s=1}^{15} (\mathrm{mean}(\mathrm{correct}_s) \cdot s^2)}{\sum_{s=1}^{15} s^2}
+$$
+
+| model_id | overall_acc | weighted_score |
+|---|---|---|
+| nvidia/AceReason-Nemotron-1.1-7B | 0.955667 | 0.912847 |
+| Qwen/Qwen2.5-Math-7B-Instruct | 0.803667 | 0.651044 |
+| Qwen/Qwen2.5-Math-1.5B-Instruct | 0.758333 | 0.571052 |
+
+Answer parsing order: `<answer>` tag, `\boxed{}`, last numeric token.
+
+<p align="center">
+  <img src="results/assets/teacher_step_comparison.png" alt="Exact match by step" width="720" />
+</p>
+
+<p align="center">
+  <img src="results/assets/pred_len_all_models.png" alt="Response length distribution" width="720" />
+</p>
+
+Raw per-model outputs: `results/run/*.csv`. Summary: `results/metrics.json`.
 
 ## Models
 
@@ -16,42 +46,17 @@ Shared generation settings for causal LM models: `max_new_tokens=4096`, greedy d
 ## Architecture
 
 ```mermaid
+%%{init: {"theme": "neutral", "themeVariables": {"fontSize": "11px", "classFontSize": "11px"}}}%%
 classDiagram
-    class Main {
-        +run_models()
-        +plots_only()
-    }
-    class Evaluate {
-        +run_models(model_ids)
-    }
-    class DataLoader {
-        +load_test_split()
-    }
-    class Metrics {
-        +extract_pred_answer()
-        +weighted_score()
-    }
-    class ModelRegistry {
-        +get_backend(model_id)
-    }
-    class HfCausalBackend {
-        +build_prompt()
-        +evaluate()
-    }
-    class MathGLMBackend {
-        +generate_one(expression)
-        +evaluate()
-    }
-    class Plots {
-        +generate_all_plots()
-    }
-    class PushGitHub {
-        +copy results/
-    }
-    class PushHF {
-        +upload README CSV plots
-    }
-
+    direction LR
+    class Main
+    class Evaluate
+    class DataLoader
+    class Metrics
+    class ModelRegistry
+    class HfCausalBackend
+    class MathGLMBackend
+    class Plots
     Main --> Evaluate
     Main --> Plots
     Evaluate --> DataLoader
@@ -60,32 +65,13 @@ classDiagram
     ModelRegistry --> MathGLMBackend
     Evaluate --> Metrics
     Plots --> Metrics
-    PushGitHub --> Main
-    PushHF --> Plots
-```
-
-```mermaid
-flowchart LR
-    subgraph Colab
-        A[Clone GitHub repo] --> B[Install deps]
-        B --> C[Download MathGLM weights]
-        C --> D[python main.py]
-        D --> E[results/run CSV]
-        E --> F[push_results_github.py]
-    end
-    subgraph LocalAgent
-        G[git pull] --> H[fetch_baseline_csv.py]
-        H --> I[sync_publish_hf.py]
-        I --> J[pymlex/calculator on HF]
-    end
-    F --> G
 ```
 
 ## Repository layout
 
 ```
 calculator-benchmark/
-├── calculator_bench/          # Python package
+├── calculator_bench/
 │   ├── config.py
 │   ├── data.py
 │   ├── metrics.py
@@ -102,9 +88,9 @@ calculator-benchmark/
 │   └── sync_publish_hf.py
 ├── main.py
 ├── results/
-│   ├── run/                   # per-model CSV outputs
-│   └── assets/                # plots
-└── checkpoints/mathglm-2b/    # weights (not in git)
+│   ├── run/
+│   └── assets/
+└── checkpoints/mathglm-2b/
 ```
 
 ## Colab Pro L4 workflow
@@ -134,15 +120,13 @@ Optional: `CALC_BENCH_DATASET`, `MATHGLM_CHECKPOINT_DIR`, `CALC_BENCH_RUN_DIR`.
 !bash scripts/download_mathglm.sh
 ```
 
-Manual mirror if wget fails: [THU cloud MathGLM-2B](https://cloud.tsinghua.edu.cn/d/cf429216289948d889a6/).
-
 Required files under `checkpoints/mathglm-2b/`:
 
 - `model_config.json`
 - `latest`
 - `1/mp_rank_00_model_states.pt`
 
-### 4. Run new models
+### 4. Run evaluation
 
 Default targets AceReason and MathGLM only:
 
@@ -156,53 +140,29 @@ All four models:
 !python main.py --all-models --run-dir results/run
 ```
 
-### 5. Push results to GitHub
+MathGLM only:
 
-Configure git in Colab once:
+```python
+!python main.py --models THUDM/MathGLM-2B --run-dir results/run
+```
+
+### 5. Push results to GitHub
 
 ```python
 !git config user.email "you@example.com"
 !git config user.name "pymlex"
+!python scripts/push_results_github.py --message "Colab: benchmark results"
 ```
 
-```python
-!python scripts/push_results_github.py --message "Colab: AceReason and MathGLM results"
-```
+### 6. Publish Hugging Face dataset card
 
-### 6. Hugging Face dataset card
-
-After results appear on GitHub, on a machine with `HF_TOKEN`:
+On a machine with `HF_TOKEN`:
 
 ```bash
 python scripts/sync_publish_hf.py
 ```
 
-This pulls `main`, merges Qwen baseline CSV files from the dataset repo if missing, rebuilds plots for all models present in `results/run/`, and uploads README, CSV, and figures to [pymlex/calculator](https://huggingface.co/datasets/pymlex/calculator).
-
-Plots in the dataset README reference PNG files hosted on GitHub:
-
-`https://raw.githubusercontent.com/pymlex/calculator-benchmark/main/results/assets/...`
-
-## Metrics
-
-Overall accuracy on the test split (3000 examples).
-
-Weighted score with step weights \(s^2\), \(s \in \{1,\ldots,15\}\):
-
-\[
-\text{weighted\_score} = \frac{\sum_{s=1}^{15} \mathrm{mean}(\mathrm{correct}_s)\, s^2}{\sum_{s=1}^{15} s^2}
-\]
-
-Answer parsing order: `<answer>` tag, `\boxed{}`, last numeric token.
-
-## Qwen baseline numbers
-
-| model_id | overall_acc | weighted_score |
-|---|---|---|
-| Qwen/Qwen2.5-Math-1.5B-Instruct | 0.758333 | 0.571052 |
-| Qwen/Qwen2.5-Math-7B-Instruct | 0.803667 | 0.651044 |
-
-AceReason and MathGLM rows are filled after Colab runs.
+This pulls `main`, fetches missing Qwen baseline CSV files from the dataset repo if needed, rebuilds plots for all models in `results/run/`, and uploads README, CSV, and figures to [pymlex/calculator](https://huggingface.co/datasets/pymlex/calculator).
 
 ## License
 
