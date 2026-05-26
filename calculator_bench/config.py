@@ -16,25 +16,29 @@ MATHGLM_CHECKPOINT_DIR = Path(
 QWEN_1_5B = "Qwen/Qwen2.5-Math-1.5B-Instruct"
 QWEN_7B = "Qwen/Qwen2.5-Math-7B-Instruct"
 ACEREASON_7B = "nvidia/AceReason-Nemotron-1.1-7B"
+OPENREASONING_1_5B = "nvidia/OpenReasoning-Nemotron-1.5B"
+DEEPSCALER_1_5B = "agentica-org/DeepScaleR-1.5B-Preview"
 MATHGLM_2B = "THUDM/MathGLM-2B"
 
 ALL_MODEL_IDS = [
     QWEN_1_5B,
     QWEN_7B,
     ACEREASON_7B,
-    MATHGLM_2B,
+    OPENREASONING_1_5B,
+    DEEPSCALER_1_5B,
 ]
 
 NEW_MODEL_IDS = [
-    ACEREASON_7B,
-    MATHGLM_2B,
+    OPENREASONING_1_5B,
+    DEEPSCALER_1_5B,
 ]
 
 DEFAULT_BATCH_SIZES = {
     QWEN_1_5B: 20,
     QWEN_7B: 8,
     ACEREASON_7B: 8,
-    MATHGLM_2B: 8,
+    OPENREASONING_1_5B: 20,
+    DEEPSCALER_1_5B: 20,
 }
 
 MATHGLM_MAX_SEQUENCE_LENGTH = int(

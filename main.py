@@ -41,7 +41,7 @@ def parse_args():
     parser.add_argument(
         "--all-models",
         action="store_true",
-        help="Run all four benchmark models",
+        help="Run all registered benchmark models",
     )
     parser.add_argument(
         "--plots-only",

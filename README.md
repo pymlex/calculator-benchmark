@@ -8,10 +8,11 @@ Evaluation pipeline for the [pymlex/calculator](https://huggingface.co/datasets/
 |---|---|
 | `Qwen/Qwen2.5-Math-1.5B-Instruct` | Transformers chat template, Qwen system prompt |
 | `Qwen/Qwen2.5-Math-7B-Instruct` | Transformers chat template, Qwen system prompt |
-| `nvidia/AceReason-Nemotron-1.1-7B` | Transformers chat template, [AceReason usage](https://huggingface.co/nvidia/AceReason-Nemotron-1.1-7B) |
-| `THUDM/MathGLM-2B` | [MathGLM](https://github.com/THUDM/MathGLM) SAT checkpoint, arithmetic input from `expression` |
+| `nvidia/AceReason-Nemotron-1.1-7B` | Transformers, [AceReason usage](https://huggingface.co/nvidia/AceReason-Nemotron-1.1-7B) |
+| `nvidia/OpenReasoning-Nemotron-1.5B` | Transformers, [OpenReasoning math prompt](https://huggingface.co/nvidia/OpenReasoning-Nemotron-1.5B) |
+| `agentica-org/DeepScaleR-1.5B-Preview` | Transformers, Qwen-style `\boxed{}` prompt |
 
-Shared generation settings for causal LM models: `max_new_tokens=4096`, greedy decoding (`do_sample=False`). MathGLM uses `max_sequence_length=1024` as in the upstream arithmetic recipe.
+Shared settings: `max_new_tokens=4096`, greedy decoding (`do_sample=False`).
 
 ## Architecture
 
@@ -25,14 +26,12 @@ classDiagram
     class Metrics
     class ModelRegistry
     class HfCausalBackend
-    class MathGLMBackend
     class Plots
     Main --> Evaluate
     Main --> Plots
     Evaluate --> DataLoader
     Evaluate --> ModelRegistry
     ModelRegistry --> HfCausalBackend
-    ModelRegistry --> MathGLMBackend
     Evaluate --> Metrics
     Plots --> Metrics
 ```
@@ -48,19 +47,16 @@ calculator-benchmark/
 │   ├── evaluate.py
 │   ├── plots.py
 │   └── models/
-│       ├── hf_causal.py
-│       └── mathglm_sat.py
+│       └── hf_causal.py
 ├── scripts/
-│   ├── download_mathglm.sh
 │   ├── fetch_baseline_csv.py
 │   ├── push_results_github.py
 │   ├── push_hf_dataset.py
 │   └── sync_publish_hf.py
 ├── main.py
-├── results/
-│   ├── run/
-│   └── assets/
-└── checkpoints/mathglm-2b/
+└── results/
+    ├── run/
+    └── assets/
 ```
 
 ## Workflow
@@ -70,8 +66,8 @@ calculator-benchmark/
 ```python
 !git clone https://github.com/pymlex/calculator-benchmark.git
 %cd calculator-benchmark
+!git pull
 !pip install -q -r requirements.txt
-!pip install -q -r requirements-mathglm.txt
 ```
 
 ### 2. Secrets
@@ -82,49 +78,31 @@ from google.colab import userdata
 os.environ["HF_TOKEN"] = userdata.get("HF_TOKEN")
 ```
 
-Optional: `CALC_BENCH_DATASET`, `MATHGLM_CHECKPOINT_DIR`, `CALC_BENCH_RUN_DIR`.
+Optional: `CALC_BENCH_DATASET`, `CALC_BENCH_RUN_DIR`.
 
-### 3. MathGLM-2B weights
+### 3. Run evaluation
 
-```python
-!bash scripts/download_mathglm.sh
-```
-
-Required files under `checkpoints/mathglm-2b/`:
-
-- `model_config.json`
-- `latest`
-- `1/mp_rank_00_model_states.pt`
-
-### 4. Run evaluation
-
-Default targets AceReason and MathGLM only:
+OpenReasoning-Nemotron-1.5B and DeepScaleR-1.5B-Preview:
 
 ```python
-!python main.py --run-dir results/run
+!python main.py --models nvidia/OpenReasoning-Nemotron-1.5B agentica-org/DeepScaleR-1.5B-Preview --run-dir results/run
 ```
 
-All four models:
+Default without `--models` runs the same pair. All registered models:
 
 ```python
 !python main.py --all-models --run-dir results/run
 ```
 
-MathGLM only:
-
-```python
-!python main.py --models THUDM/MathGLM-2B --run-dir results/run
-```
-
-### 5. Push results to GitHub
+### 4. Push results to GitHub
 
 ```python
 !git config user.email "you@example.com"
 !git config user.name "pymlex"
-!python scripts/push_results_github.py --message "Colab: benchmark results"
+!python scripts/push_results_github.py --message "Colab: OpenReasoning and DeepScaleR results"
 ```
 
-### 6. Publish Hugging Face dataset card
+### 5. Publish Hugging Face dataset card
 
 On a machine with `HF_TOKEN`:
 
@@ -138,7 +116,7 @@ This pulls `main`, fetches missing Qwen baseline CSV files from the dataset repo
 
 Dataset: [pymlex/calculator](https://huggingface.co/datasets/pymlex/calculator) test split, 3000 examples.
 
-Models evaluated so far: `Qwen2.5-Math-1.5B`, `Qwen2.5-Math-7B`, `AceReason-Nemotron-1.1-7B`. `MathGLM-2B` is supported by the runner and will appear in the table after a successful Colab run.
+Completed runs: Qwen 1.5B, Qwen 7B, AceReason-Nemotron-1.1-7B. After Colab runs for OpenReasoning-Nemotron-1.5B and DeepScaleR-1.5B-Preview, refresh via `scripts/sync_publish_hf.py`.
 
 Weighted score with step weights $s^2$, $s \in \{1,\ldots,15\}$:
 

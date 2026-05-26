@@ -45,7 +45,8 @@ Source code and reproducible evaluation pipeline:
 ## Evaluation across four models
 
 Models: `Qwen2.5-Math-1.5B`, `Qwen2.5-Math-7B`,
-`AceReason-Nemotron-1.1-7B`, `MathGLM-2B`.
+`AceReason-Nemotron-1.1-7B`, `OpenReasoning-Nemotron-1.5B`,
+`DeepScaleR-1.5B-Preview`.
 
 Weighted score:
 

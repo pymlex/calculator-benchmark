@@ -24,13 +24,17 @@ ACEREASON_SYSTEM = (
     "You are a helpful and harmless assistant. You should think step-by-step."
 )
 ACEREASON_USER_SUFFIX = "Please place your final answer inside \\boxed{}."
+OPENREASONING_MATH = (
+    "Solve the following math problem. Make sure to put the answer "
+    "(and only answer) inside \\boxed{}.\n\n{user}"
+)
 
 
 class HfCausalBackend:
     def __init__(
         self,
         model_id: str,
-        prompt_style: Literal["qwen", "acereason"],
+        prompt_style: Literal["qwen", "acereason", "openreasoning"],
     ):
         self.model_id = model_id
         self.prompt_style = prompt_style
@@ -70,10 +74,20 @@ class HfCausalBackend:
         torch.cuda.empty_cache()
 
     def build_prompt(self, prompt: str) -> str:
+        messages: list[dict[str, str]]
         if self.prompt_style == "qwen":
             messages = [
                 {"role": "system", "content": QWEN_SYSTEM},
                 {"role": "user", "content": prompt.strip()},
+            ]
+        elif self.prompt_style == "openreasoning":
+            messages = [
+                {
+                    "role": "user",
+                    "content": OPENREASONING_MATH.format(
+                        user=prompt.strip()
+                    ),
+                },
             ]
         else:
             user_text = f"{prompt.strip()}\n\n{ACEREASON_USER_SUFFIX}"
