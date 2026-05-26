@@ -9,6 +9,16 @@ from matplotlib import cm
 from calculator_bench.metrics import build_summary, safe_model_filename
 
 
+def _model_column_order(combined: pd.DataFrame) -> list[str]:
+    summary = build_summary(combined)
+    ranked = summary.sort_values(
+        ["overall_acc", "weighted_score"],
+        ascending=False,
+    )["model_id"].tolist()
+    present = set(combined["model_id"].unique())
+    return [m for m in ranked if m in present]
+
+
 def plot_step_accuracy(
     combined: pd.DataFrame,
     out_path: Path,
@@ -20,16 +30,25 @@ def plot_step_accuracy(
         values="correct",
         aggfunc="mean",
     ).sort_index()
-    ax = pivot.plot(kind="bar", figsize=(12, 5))
+    column_order = _model_column_order(combined)
+    pivot = pivot[column_order]
+
+    fig, ax = plt.subplots(figsize=(14, 5))
+    pivot.plot(kind="bar", ax=ax)
     ax.set_title(title)
     ax.set_xlabel("steps")
     ax.set_ylabel("accuracy")
     ax.set_ylim(0, 1)
-    ax.legend(loc="upper right", fontsize=8)
+    ax.legend(
+        loc="upper left",
+        bbox_to_anchor=(1.02, 1.0),
+        borderaxespad=0.0,
+        fontsize=8,
+    )
     ax.grid(axis="y", alpha=0.5)
-    plt.tight_layout()
-    plt.savefig(out_path, dpi=180)
-    plt.close()
+    fig.subplots_adjust(right=0.72)
+    fig.savefig(out_path, dpi=180, bbox_inches="tight")
+    plt.close(fig)
 
 
 def plot_pred_len_by_steps(
