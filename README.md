@@ -11,8 +11,7 @@ Models evaluated so far: `Qwen2.5-Math-1.5B`, `Qwen2.5-Math-7B`, `AceReason-Nemo
 Weighted score with step weights $s^2$, $s \in \{1,\ldots,15\}$:
 
 $$
-\text{weighted\_score} = \frac{\sum_{s=1}^{15} (\mathrm{mean}(\mathrm{correct}_s) \cdot s^2)}{\sum_{s=1}^{15} s^2}
-$$
+\mathrm{weighted\_score} = \frac{\sum_{s=1}^{15} (\mathrm{mean}(\mathrm{correct}_s) \cdot s^2)}{\sum_{s=1}^{15} s^2}
 
 | model_id | overall_acc | weighted_score |
 |---|---|---|
