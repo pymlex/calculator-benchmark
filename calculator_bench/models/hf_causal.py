@@ -24,9 +24,9 @@ ACEREASON_SYSTEM = (
     "You are a helpful and harmless assistant. You should think step-by-step."
 )
 ACEREASON_USER_SUFFIX = "Please place your final answer inside \\boxed{}."
-OPENREASONING_MATH = (
+OPENREASONING_MATH_PREFIX = (
     "Solve the following math problem. Make sure to put the answer "
-    "(and only answer) inside \\boxed{}.\n\n{user}"
+    "(and only answer) inside \\boxed{}.\n\n"
 )
 
 
@@ -84,9 +84,7 @@ class HfCausalBackend:
             messages = [
                 {
                     "role": "user",
-                    "content": OPENREASONING_MATH.format(
-                        user=prompt.strip()
-                    ),
+                    "content": OPENREASONING_MATH_PREFIX + prompt.strip(),
                 },
             ]
         else:
