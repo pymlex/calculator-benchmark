@@ -12,6 +12,7 @@ Weighted score with step weights $s^2$, $s \in \{1,\ldots,15\}$:
 
 $$
 \mathrm{weighted\_score} = \frac{\sum_{s=1}^{15} (\mathrm{mean}(\mathrm{correct}_s) \cdot s^2)}{\sum_{s=1}^{15} s^2}
+$$
 
 | model_id | overall_acc | weighted_score |
 |---|---|---|
